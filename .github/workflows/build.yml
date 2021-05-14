@@ -1,0 +1,24 @@
+name: build
+on: [push]
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+          os: [windows-2019, windows-2016]
+          vs: [vs16, vc15]
+          architecture: [x64, x86]
+          exclude:
+            - os: windows-2019
+              vs: vc15
+            - os: windows-2016
+              vs: vs16
+    runs-on: ${{matrix.os}}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: microsoft/setup-msbuild@v1.0.2
+      - run: powershell ./.github/workflows/build.ps1 ${{matrix.architecture}} ${{matrix.vs}}
+      - uses: actions/upload-artifact@v2
+        with:
+          name: libsodium-${{github.sha}}-${{matrix.vs}}-${{matrix.architecture}}
+          path: ./winlibs/
